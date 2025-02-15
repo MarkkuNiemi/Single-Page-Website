@@ -1,25 +1,23 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const server = http.createServer((req, res) => {
-    const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
-    
+    // Tarkistetaan pyydetäänkö juuri "/"-polkua, joka on pääsivu
+    let filePath = path.join(__dirname, 'SinglePageAll.html');
+
     // Määritetään tiedoston tyyppi
-    let extname = path.extname(filePath);
+    const extname = path.extname(filePath);
     let contentType = 'text/html';
 
+    // CSS ja JS -tiedostojen käsittely
     if (extname === '.css') {
         contentType = 'text/css';
     } else if (extname === '.js') {
         contentType = 'application/javascript';
-    } else if (extname === '.png') {
-        contentType = 'image/png';
-    } else if (extname === '.jpg' || extname === '.jpeg') {
-        contentType = 'image/jpeg';
     }
 
-    // Yritetään lukea tiedostoa ja lähettää se
+    // Luetaan tiedosto ja lähetetään se
     fs.readFile(filePath, (err, content) => {
         if (err) {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
