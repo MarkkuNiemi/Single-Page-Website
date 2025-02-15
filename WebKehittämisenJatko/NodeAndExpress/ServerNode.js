@@ -1,21 +1,37 @@
 const http = require("http");
-const port = 3000;
+const fs = require("fs");
+const path = require("path");
 
 const server = http.createServer((req, res) => {
-    res.setHeader("Content-Type", "application/json");
+    const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
     
-    if (req.url === "/") {
-        res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end("Tervetuloa Node.js-palvelimelle!");
-    } else if (req.url === "/api") {
-        res.writeHead(200);
-        res.end(JSON.stringify({ message: "Tämä on API-endpoint" }));
-    } else {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Sivua ei löydy");
+    // Määritetään tiedoston tyyppi
+    let extname = path.extname(filePath);
+    let contentType = 'text/html';
+
+    if (extname === '.css') {
+        contentType = 'text/css';
+    } else if (extname === '.js') {
+        contentType = 'application/javascript';
+    } else if (extname === '.png') {
+        contentType = 'image/png';
+    } else if (extname === '.jpg' || extname === '.jpeg') {
+        contentType = 'image/jpeg';
     }
+
+    // Yritetään lukea tiedostoa ja lähettää se
+    fs.readFile(filePath, (err, content) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            res.end('Tiedostoa ei löytynyt');
+        } else {
+            res.writeHead(200, { 'Content-Type': contentType });
+            res.end(content);
+        }
+    });
 });
 
-server.listen(port, () => {
-    console.log(`Palvelin käynnissä osoitteessa http://localhost:${port}`);
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Palvelin käynnissä osoitteessa http://localhost:${PORT}`);
 });

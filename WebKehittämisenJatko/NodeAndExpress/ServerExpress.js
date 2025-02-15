@@ -1,30 +1,17 @@
-// Tuodaan tarvittavat moduulit
 const express = require('express');
+const path = require('path');
 const app = express();
-const port = 3000; // Portti, jossa palvelin kuuntelee
+const port = 3000;
 
-// Asetetaan Expressin serverin käsittelemään JSON-muotoisia pyyntöjä
-app.use(express.json());
+// Palvelin tarjoaa staattiset tiedostot public-kansiosta
+app.use(express.static(path.join(__dirname)));
 
-// Yksinkertainen reitti, joka vastaa GET-pyyntöihin
+// Reitti HTML-sivulle (index.html)
 app.get('/', (req, res) => {
-  res.send('Tervetuloa Express-palvelimeen!');
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Reitti, joka vastaanottaa POST-pyynnön ja tulostaa JSON-dataa
-app.post('/data', (req, res) => {
-  const receivedData = req.body;
-  console.log('Vastaanotettu data:', receivedData);
-  res.status(200).json({ message: 'Data vastaanotettu onnistuneesti!', data: receivedData });
-});
-
-// Reitti, joka vastaa dynaamisesti parametrilla
-app.get('/hello/:name', (req, res) => {
-  const name = req.params.name;
-  res.send(`Hei, ${name}!`);
-});
-
-// Käynnistetään palvelin ja kuunnellaan määritellyssä portissa
+// Käynnistetään palvelin
 app.listen(port, () => {
-  console.log(`Serveri käynnissä portissa ${port}`);
+  console.log(`Palvelin käynnissä osoitteessa http://localhost:${port}`);
 });
