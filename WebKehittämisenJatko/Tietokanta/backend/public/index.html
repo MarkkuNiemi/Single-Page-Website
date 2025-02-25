@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite CRUD Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: auto;
+        }
+        input, button {
+            margin: 5px 0;
+            display: block;
+            width: 100%;
+            padding: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .delete-btn {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>SQLite CRUD Test</h2>
+
+    <h3>Lisää käyttäjä</h3>
+    <input type="text" id="name" placeholder="Nimi">
+    <input type="text" id="address" placeholder="Osoite">
+    <input type="text" id="phone" placeholder="Puhelin">
+    <button onclick="addUser()">Lisää</button>
+
+    <h3>Käyttäjät</h3>
+    <button onclick="fetchUsers()">Päivitä lista</button>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nimi</th>
+                <th>Osoite</th>
+                <th>Puhelin</th>
+                <th>Poista</th>
+            </tr>
+        </thead>
+        <tbody id="userTable">
+            <!-- Tiedot lisätään tänne JavaScriptillä -->
+        </tbody>
+    </table>
+
+    <script>
+        const API_URL = "http://localhost:3000/users";
+
+        // Käyttäjän lisääminen tietokantaan
+        function addUser() {
+            const name = document.getElementById("name").value;
+            const address = document.getElementById("address").value;
+            const phone = document.getElementById("phone").value;
+
+            fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, address, phone })
+            })
+            .then(response => response.json())
+            .then(() => {
+                alert("Käyttäjä lisätty!");
+                fetchUsers();
+            })
+            .catch(error => console.error("Virhe lisättäessä:", error));
+        }
+
+        // Käyttäjien hakeminen tietokannasta
+        function fetchUsers() {
+            fetch(API_URL)
+                .then(response => response.json())
+                .then(users => {
+                    const tableBody = document.getElementById("userTable");
+                    tableBody.innerHTML = ""; // Tyhjennetään taulukko ennen uutta täyttöä
+
+                    users.forEach(user => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${user.id}</td>
+                            <td>${user.name}</td>
+                            <td>${user.address}</td>
+                            <td>${user.phone}</td>
+                            <td><span class="delete-btn" onclick="deleteUser(${user.id})">🗑️</span></td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error("Virhe haettaessa tietoja:", error));
+        }
+
+        // Käyttäjän poistaminen tietokannasta
+        function deleteUser(id) {
+            if (confirm("Haluatko varmasti poistaa käyttäjän?")) {
+                fetch(`${API_URL}/${id}`, { method: "DELETE" })
+                    .then(response => response.json())
+                    .then(() => {
+                        alert("Käyttäjä poistettu!");
+                        fetchUsers();
+                    })
+                    .catch(error => console.error("Virhe poistettaessa:", error));
+            }
+        }
+
+        // Lataa käyttäjät heti, kun sivu avataan
+        window.onload = fetchUsers;
+    </script>
+</body>
+</html>
