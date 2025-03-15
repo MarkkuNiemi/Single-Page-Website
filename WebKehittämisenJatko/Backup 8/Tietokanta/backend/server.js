@@ -1,12 +1,9 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
-const cors = require('cors');
-
 const app = express();
 const port = 3000;
 
-app.use(cors());  // Salli kaikki CORS-pyynnöt
 // Käytetään body-parseria JSON-datan käsittelyyn
 app.use(bodyParser.json());
 
