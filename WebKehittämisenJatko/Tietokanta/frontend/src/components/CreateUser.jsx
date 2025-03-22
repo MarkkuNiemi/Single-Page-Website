@@ -1,3 +1,4 @@
+import React from "react";  // Lisää tämä, jos sitä ei ole
 import { useState } from "react";
 import axios from "axios";
 
