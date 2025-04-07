@@ -1,0 +1,13 @@
+/* App.css */
+
+main {
+  padding: 2rem;
+  text-align: center;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem 0;
+  background-color: #2d3a4d;
+  color: white;
+}
