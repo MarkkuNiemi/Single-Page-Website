@@ -6,9 +6,6 @@ import '../tyylit/calendar.css';
 import '../tyylit/ammattilainen.css';
 
 function AmmattilainenNakyma() {
-  const meneTakaisin = () => {
-    navigate('/');
-  };
   const navigate = useNavigate();
   const [date, setDate] = useState(new Date());
   const [ajat, setAjat] = useState([
@@ -47,15 +44,8 @@ function AmmattilainenNakyma() {
         {/* Kalenteri */}
         <div className="kalenteri">
           <Calendar onChange={handleDateChange} value={date} />
-
-          {/* Takaisin-painike */}
-          <div className="mt-5">
-            <button className="btn btn-turkoosi" onClick={meneTakaisin}>
-              Takaisin kirjautumissivulle
-            </button>
-          </div>
         </div>
-
+        
         {/* Ajat ja hallinta */}
         <div className="ajat-lista">
           <h2>Ajat päivälle {date.toLocaleDateString()}</h2>
@@ -79,12 +69,13 @@ function AmmattilainenNakyma() {
             <button onClick={lisaaAika}>Lisää vapaa aika</button>
           </div>
         </div>
-
       </main>
 
       {/* Footer */}
       <footer className="footer">
         &copy; 2025 Loppuprojekti | Ammattilaisnäkymä
+        <br />
+        <button onClick={() => navigate('/')}>Takaisin kirjautumiseen</button>
       </footer>
     </div>
   );
