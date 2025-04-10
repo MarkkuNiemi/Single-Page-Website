@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -6,41 +6,95 @@ import '../tyylit/calendar.css';
 import '../tyylit/ammattilainen.css';
 
 function AmmattilainenNakyma() {
-  const meneTakaisin = () => {
-    navigate('/');
-  };
+  const kayttaja = "Lääkäri Emilia";
   const navigate = useNavigate();
+
   const [date, setDate] = useState(new Date());
-  const [ajat, setAjat] = useState([
-    { id: 1, aika: '10:00 - 11:00', status: 'vapaa' },
-    { id: 2, aika: '11:30 - 12:30', status: 'varattu' },
-  ]);
+  const [ajat, setAjat] = useState([]);
   const [uusiAika, setUusiAika] = useState('');
+
+  // Haetaan ajat tietokannasta valitulle päivälle ja käyttäjälle
+  useEffect(() => {
+    const haeAjat = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/ajat');
+        const data = await res.json();
+
+        const paivaString = date.toISOString().split('T')[0];
+        const filtteroidytAjat = data.filter(
+          (aika) => aika.kayttaja === kayttaja && aika.paiva === paivaString // korjattu avain
+        );
+
+
+        setAjat(filtteroidytAjat);
+      } catch (err) {
+        console.error('Virhe haettaessa aikoja:', err);
+      }
+    };
+
+    haeAjat();
+  }, [date]);
 
   const handleDateChange = (newDate) => {
     setDate(newDate);
   };
 
-  const lisaaAika = () => {
+  const lisaaAika = async () => {
     if (!uusiAika) return;
+
     const uusi = {
-      id: Date.now(),
+      kayttaja: kayttaja, // korjattu avain
+      paiva: date.toISOString().split('T')[0],
       aika: uusiAika,
       status: 'vapaa',
     };
-    setAjat([...ajat, uusi]);
-    setUusiAika('');
+
+
+    try {
+      const res = await fetch('http://localhost:5000/api/ajat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(uusi),
+      });
+
+      if (res.ok) {
+        setAjat([...ajat, { ...uusi, id: Date.now() }]);
+        setUusiAika('');
+      } else {
+        alert('Ajan lisäys epäonnistui');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Virhe lisättäessä aikaa');
+    }
   };
 
-  const poistaAika = (id) => {
-    setAjat(ajat.filter((a) => a.id !== id));
+  const poistaAika = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/ajat/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        setAjat(ajat.filter((aika) => aika.id !== id));
+      } else {
+        alert('Ajan poisto epäonnistui');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Virhe poistaessa aikaa');
+    }
+  };
+
+  const meneTakaisin = () => {
+    navigate('/');
   };
 
   return (
     <div className="ammattilainen-nakyma">
       {/* Header */}
       <header className="header">
-        <h1>Tervetuloa, Ammattilainen</h1>
+        <h1>Tervetuloa, Emilia</h1>
       </header>
 
       <main className="main-content">
@@ -61,12 +115,16 @@ function AmmattilainenNakyma() {
           <h2>Ajat päivälle {date.toLocaleDateString()}</h2>
 
           <ul>
-            {ajat.map((aika) => (
-              <li key={aika.id} className={aika.status === 'vapaa' ? 'vapaa' : 'varattu'}>
-                {aika.aika} ({aika.status})
-                <button onClick={() => poistaAika(aika.id)}>Poista</button>
-              </li>
-            ))}
+            {ajat.length === 0 ? (
+              <li>Ei aikoja valitulle päivälle</li>
+            ) : (
+              ajat.map((aika) => (
+                <li key={aika.id} className={aika.status === 'vapaa' ? 'vapaa' : 'varattu'}>
+                  {aika.aika} ({aika.status})
+                  <button onClick={() => poistaAika(aika.id)}>Poista</button>
+                </li>
+              ))
+            )}
           </ul>
 
           <div className="lisaa-aika">
@@ -79,7 +137,6 @@ function AmmattilainenNakyma() {
             <button onClick={lisaaAika}>Lisää vapaa aika</button>
           </div>
         </div>
-
       </main>
 
       {/* Footer */}

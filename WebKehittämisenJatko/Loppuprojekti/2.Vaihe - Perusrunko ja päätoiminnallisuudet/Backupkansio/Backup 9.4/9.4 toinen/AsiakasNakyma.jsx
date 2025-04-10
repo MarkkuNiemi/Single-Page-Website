@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -7,31 +7,12 @@ import '../tyylit/asiakasnakyma.css';
 
 function AsiakasNakyma() {
   const [date, setDate] = useState(new Date());
-  const [valittuAmmattihenkilo, setValittuAmmattihenkilo] = useState('emilia'); // ammattilaisen ID
-  const [ajat, setAjat] = useState([]);
-  const navigate = useNavigate();
+  const [valittuAmmattihenkilo, setValittuAmmattihenkilo] = useState('Lääkäri Emilia');
+  const navigate = useNavigate(); // Navigointifunktio
 
-  // Ammattilaisten lista (tässä kovakoodattu, myöhemmin voisi tulla backendistä)
-  const ammattilaiset = [
-    { nimi: 'Lääkäri Emilia', id: 'emilia' },
-    { nimi: 'Lääkäri Petteri', id: 'petteri' },
-  ];
-
-  // Hae vapaat ajat backendistä kun valinnat muuttuvat
-  useEffect(() => {
-    const fetchAjat = async () => {
-      try {
-        const paivaStr = date.toISOString().split('T')[0]; // Muoto 'yyyy-mm-dd'
-        const response = await fetch(`http://localhost:5000/api/ajat?paiva=${paivaStr}&kayttaja_id=${valittuAmmattihenkilo}`);
-        const data = await response.json();
-        setAjat(data);
-      } catch (error) {
-        console.error('Virhe haettaessa aikoja:', error);
-      }
-    };
-
-    fetchAjat();
-  }, [date, valittuAmmattihenkilo]);
+  const handleDateChange = (newDate) => {
+    setDate(newDate);
+  };
 
   const handleAmmattihenkiloChange = (e) => {
     setValittuAmmattihenkilo(e.target.value);
@@ -58,9 +39,8 @@ function AsiakasNakyma() {
             value={valittuAmmattihenkilo}
             onChange={handleAmmattihenkiloChange}
           >
-            {ammattilaiset.map((a) => (
-              <option key={a.id} value={a.id}>{a.nimi}</option>
-            ))}
+            <option value="Lääkäri Emilia">Lääkäri Emilia</option>
+            <option value="Lääkäri Petteri">Lääkäri Petteri</option>
           </select>
         </div>
 
@@ -68,16 +48,12 @@ function AsiakasNakyma() {
           {/* Aikojen lista */}
           <div className="col-md-8 mb-4">
             <div className="availabilities">
-              <h2 className="h4 mb-4">Vapaat ajat – {valittuAmmattihenkilo}</h2>
-              {ajat.length === 0 ? (
-                <p>Ei vapaita aikoja valitulle päivälle.</p>
-              ) : (
-                <ul>
-                  {ajat.map((aika) => (
-                    <li key={aika.id}>{aika.aika}</li>
-                  ))}
-                </ul>
-              )}
+              <h2 className="h4 mb-4">Vapaana olevat ajat – {valittuAmmattihenkilo}</h2>
+              <ul>
+                <li>10:00 - 12:00</li>
+                <li>12:30 - 14:00</li>
+                <li>14:30 - 16:00</li>
+              </ul>
             </div>
           </div>
 
@@ -85,7 +61,7 @@ function AsiakasNakyma() {
           <div className="col-md-4 d-flex justify-content-center">
             <div className="calendar-box w-100">
               <Calendar
-                onChange={setDate}
+                onChange={handleDateChange}
                 value={date}
               />
             </div>
@@ -98,6 +74,7 @@ function AsiakasNakyma() {
             Takaisin kirjautumissivulle
           </button>
         </div>
+
       </main>
 
       <footer className="bg-turkoosi text-white text-center py-3">
