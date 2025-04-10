@@ -6,14 +6,14 @@ const haeAjat = async (req, res) => {
 
   try {
     if (paiva && kayttaja) {
-      // Asiakas: hae vain valitun ammattilaisen vapaat ajat päivälle
+      // Haetaan kaikki ajat (vapaa + varattu) tälle käyttäjälle ja päivälle
       const tulos = await pool.query(
-        'SELECT * FROM ajat WHERE paiva = $1 AND kayttaja = $2 AND status = $3 ORDER BY aika',
-        [paiva, kayttaja, 'vapaa']
+        'SELECT * FROM ajat WHERE paiva = $1 AND kayttaja = $2 ORDER BY aika',
+        [paiva, kayttaja]
       );
       return res.json(tulos.rows);
     } else {
-      // Ammattilainen ja Admin: hae kaikki ajat
+      // Admin tai yleishaku: hae kaikki ajat koko tietokannasta
       const tulos = await pool.query('SELECT * FROM ajat ORDER BY paiva, aika');
       return res.json(tulos.rows);
     }
@@ -22,6 +22,7 @@ const haeAjat = async (req, res) => {
     res.status(500).json({ virhe: 'Tietokantavirhe' });
   }
 };
+
 
 
 // Lisää uusi aika
@@ -51,4 +52,20 @@ const poistaAika = async (req, res) => {
   }
 };
 
-module.exports = { haeAjat, lisaaAika, poistaAika };
+// PATCH: varaa aika (päivittää statuksen)
+const varaaAika = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query(
+      'UPDATE ajat SET status = $1 WHERE id = $2',
+      ['varattu', id]
+    );
+    res.json({ viesti: 'Aika varattu onnistuneesti' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ virhe: 'Ajan varaaminen epäonnistui' });
+  }
+};
+
+module.exports = { haeAjat, lisaaAika, poistaAika, varaaAika };
+

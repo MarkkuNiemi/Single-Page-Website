@@ -3,7 +3,8 @@ const router = express.Router();
 const {
   haeAjat,
   lisaaAika,
-  poistaAika
+  poistaAika,
+  varaaAika
 } = require('../controllers/ajanvarausController');
 
 // GET: kaikki ajat
@@ -14,5 +15,8 @@ router.post('/', lisaaAika);
 
 // DELETE: poista aika id:llä
 router.delete('/:id', poistaAika);
+
+router.patch('/:id/varaa', varaaAika);
+
 
 module.exports = router;

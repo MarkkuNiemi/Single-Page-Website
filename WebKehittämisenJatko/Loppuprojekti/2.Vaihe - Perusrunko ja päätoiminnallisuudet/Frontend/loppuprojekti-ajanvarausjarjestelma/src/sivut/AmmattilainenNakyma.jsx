@@ -6,32 +6,27 @@ import '../tyylit/calendar.css';
 import '../tyylit/ammattilainen.css';
 
 function AmmattilainenNakyma() {
-  const kayttaja = "Lääkäri Emilia";
+  const kayttaja = "Lääkäri Emilia"; // Tämä vastaa kayttaja-sarakkeen arvoa
   const navigate = useNavigate();
 
   const [date, setDate] = useState(new Date());
   const [ajat, setAjat] = useState([]);
   const [uusiAika, setUusiAika] = useState('');
 
-  // Haetaan ajat tietokannasta valitulle päivälle ja käyttäjälle
+  const paivaStr = date.toISOString().split('T')[0];
+
+  // Yhteinen funktio aikoja varten
+  const haeAjat = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/ajat?paiva=${paivaStr}&kayttaja=${kayttaja}`);
+      const data = await response.json();
+      setAjat(data);
+    } catch (err) {
+      console.error('Virhe haettaessa aikoja:', err);
+    }
+  };
+
   useEffect(() => {
-    const haeAjat = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/ajat');
-        const data = await res.json();
-
-        const paivaString = date.toISOString().split('T')[0];
-        const filtteroidytAjat = data.filter(
-          (aika) => aika.kayttaja === kayttaja && aika.paiva === paivaString // korjattu avain
-        );
-
-
-        setAjat(filtteroidytAjat);
-      } catch (err) {
-        console.error('Virhe haettaessa aikoja:', err);
-      }
-    };
-
     haeAjat();
   }, [date]);
 
@@ -43,12 +38,11 @@ function AmmattilainenNakyma() {
     if (!uusiAika) return;
 
     const uusi = {
-      kayttaja: kayttaja, // korjattu avain
-      paiva: date.toISOString().split('T')[0],
+      kayttaja,
+      paiva: paivaStr,
       aika: uusiAika,
       status: 'vapaa',
     };
-
 
     try {
       const res = await fetch('http://localhost:5000/api/ajat', {
@@ -58,7 +52,7 @@ function AmmattilainenNakyma() {
       });
 
       if (res.ok) {
-        setAjat([...ajat, { ...uusi, id: Date.now() }]);
+        await haeAjat();
         setUusiAika('');
       } else {
         alert('Ajan lisäys epäonnistui');
@@ -76,7 +70,7 @@ function AmmattilainenNakyma() {
       });
 
       if (res.ok) {
-        setAjat(ajat.filter((aika) => aika.id !== id));
+        await haeAjat();
       } else {
         alert('Ajan poisto epäonnistui');
       }
@@ -92,7 +86,6 @@ function AmmattilainenNakyma() {
 
   return (
     <div className="ammattilainen-nakyma">
-      {/* Header */}
       <header className="header">
         <h1>Tervetuloa, Emilia</h1>
       </header>
@@ -139,7 +132,6 @@ function AmmattilainenNakyma() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="footer">
         &copy; 2025 Loppuprojekti | Ammattilaisnäkymä
       </footer>
