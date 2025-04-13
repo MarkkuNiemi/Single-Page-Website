@@ -87,7 +87,7 @@ function AmmattilainenNakyma() {
   return (
     <div className="ammattilainen-nakyma">
       <header className="header">
-        <h1>Tervetuloa, Emilia</h1>
+        <h1>Tervetuloa Emilia</h1>
       </header>
 
       <main className="main-content">

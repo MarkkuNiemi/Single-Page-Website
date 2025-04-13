@@ -4,7 +4,9 @@ const {
   haeAjat,
   lisaaAika,
   poistaAika,
-  varaaAika
+  varaaAika,
+  haeAsiakkaanAjat
+
 } = require('../controllers/ajanvarausController');
 
 // GET: kaikki ajat
@@ -17,6 +19,8 @@ router.post('/', lisaaAika);
 router.delete('/:id', poistaAika);
 
 router.patch('/:id/varaa', varaaAika);
+
+router.get('/asiakkaan-ajat', haeAsiakkaanAjat);
 
 
 module.exports = router;

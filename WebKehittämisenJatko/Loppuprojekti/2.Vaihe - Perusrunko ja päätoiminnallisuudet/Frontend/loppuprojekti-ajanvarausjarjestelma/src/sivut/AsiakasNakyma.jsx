@@ -6,33 +6,47 @@ import '../tyylit/calendar.css';
 import '../tyylit/asiakasnakyma.css';
 
 function AsiakasNakyma() {
-  const [date, setDate] = useState(new Date());
-  const [valittuAmmattihenkilo, setValittuAmmattihenkilo] = useState('Lääkäri Emilia'); // ✅ korjattu nimi
-  const [ajat, setAjat] = useState([]);
   const navigate = useNavigate();
+  const [date, setDate] = useState(new Date());
+  const [valittuAmmattihenkilo, setValittuAmmattihenkilo] = useState('Lääkäri Emilia');
+  const [ajat, setAjat] = useState([]);
+  const [omatVaraukset, setOmatVaraukset] = useState([]);
+  const asiakasNimi = 'Pekka'; // Kovakoodattu asiakkaan nimi
 
-  // ✅ Ammattilaiset käyttävät nyt tietokannan tarkkoja arvoja
-  const ammattilaiset = [
-    { nimi: 'Lääkäri Emilia', id: 'Lääkäri Emilia' },
-    { nimi: 'Lääkäri Petteri', id: 'Lääkäri Petteri' },
-  ];
+  const paivaStr = date.toISOString().split('T')[0];
+
+  // Hae ajat valitulle ammattilaiselle ja päivälle
+  const haeAjat = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/ajat?paiva=${paivaStr}&kayttaja=${valittuAmmattihenkilo}`);
+      const data = await res.json();
+      setAjat(data);
+    } catch (err) {
+      console.error('Virhe haettaessa aikoja:', err);
+    }
+  };
+
+  // Hae asiakkaan omat varaukset
+  const haeOmatVaraukset = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/ajat`);
+      const data = await res.json();
+      const omat = data.filter(
+        (aika) => aika.status === 'varattu' && aika.asiakas === asiakasNimi
+      );
+      setOmatVaraukset(omat);
+    } catch (err) {
+      console.error('Virhe haettaessa omia varauksia:', err);
+    }
+  };
 
   useEffect(() => {
-    const fetchAjat = async () => {
-      try {
-        const paivaStr = date.toISOString().split('T')[0];
-        const response = await fetch(
-          `http://localhost:5000/api/ajat?paiva=${paivaStr}&kayttaja=${valittuAmmattihenkilo}`
-        );
-        const data = await response.json();
-        setAjat(data);
-      } catch (error) {
-        console.error('Virhe haettaessa aikoja:', error);
-      }
-    };
-
-    fetchAjat();
+    haeAjat();
   }, [date, valittuAmmattihenkilo]);
+
+  useEffect(() => {
+    haeOmatVaraukset();
+  }, [ajat]);
 
   const handleAmmattihenkiloChange = (e) => {
     setValittuAmmattihenkilo(e.target.value);
@@ -42,20 +56,17 @@ function AsiakasNakyma() {
     try {
       const res = await fetch(`http://localhost:5000/api/ajat/${id}/varaa`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ asiakas: asiakasNimi })
       });
 
       if (res.ok) {
-        const paivaStr = date.toISOString().split('T')[0];
-        const uusiRes = await fetch(
-          `http://localhost:5000/api/ajat?paiva=${paivaStr}&kayttaja=${valittuAmmattihenkilo}`
-        );
-        const data = await uusiRes.json();
-        setAjat(data);
+        await haeAjat();
       } else {
         alert('Ajan varaaminen epäonnistui');
       }
     } catch (err) {
-      console.error('Virhe varattaessa aikaa:', err);
+      console.error('Verkkovirhe varattaessa aikaa:', err);
       alert('Verkkovirhe varattaessa aikaa');
     }
   };
@@ -64,10 +75,33 @@ function AsiakasNakyma() {
     navigate('/');
   };
 
+
+  const peruutaVaraus = async (id) => {
+    if (!window.confirm('Haluatko varmasti peruuttaa ajan?')) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/ajat/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        await haeAjat();
+        await haeOmatVaraukset();
+      } else {
+        alert('Peruutus epäonnistui');
+      }
+    } catch (err) {
+      console.error('Virhe peruuttaessa aikaa:', err);
+      alert('Verkkovirhe peruuttaessa aikaa');
+    }
+  };
+
+
+
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
       <header className="bg-turkoosi text-white py-4 text-center shadow">
-        <h1 className="h3">Asiakasnäkymä</h1>
+        <h1 className="h3">Tervetuloa Pekka</h1>
       </header>
 
       <main className="flex-grow-1 container py-5">
@@ -81,11 +115,8 @@ function AsiakasNakyma() {
             value={valittuAmmattihenkilo}
             onChange={handleAmmattihenkiloChange}
           >
-            {ammattilaiset.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.nimi}
-              </option>
-            ))}
+            <option value="Lääkäri Emilia">Lääkäri Emilia</option>
+            <option value="Lääkäri Petteri">Lääkäri Petteri</option>
           </select>
         </div>
 
@@ -97,19 +128,46 @@ function AsiakasNakyma() {
                 <p>Ei vapaita aikoja valitulle päivälle.</p>
               ) : (
                 <ul>
-                  {ajat.map((aika) => (
-                    <li
-                      key={aika.id}
-                      className="d-flex justify-content-between align-items-center mb-2"
-                    >
-                      <span>{aika.aika}</span>
-                      <button
-                        className="btn btn-sm btn-success"
-                        onClick={() => varaaAika(aika.id)}
+                  {ajat
+                    .filter((a) => a.status === 'vapaa')
+                    .map((aika) => (
+                      <li
+                        key={aika.id}
+                        className="d-flex justify-content-between align-items-center mb-2"
                       >
-                        Varaa
+                        <span>{aika.aika}</span>
+                        <button
+                          className="btn btn-sm btn-success"
+                          onClick={() => varaaAika(aika.id)}
+                        >
+                          Varaa
+                        </button>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="mt-5">
+              <h3 className="h5">Omat varaukset</h3>
+              {omatVaraukset.length === 0 ? (
+                <p>Ei varauksia vielä.</p>
+              ) : (
+                <ul>
+                  {omatVaraukset.map((v) => (
+                    <li key={v.id} className="d-flex justify-content-between align-items-center">
+                      <span>
+                        {new Date(v.paiva).toLocaleDateString()} klo {v.aika} – {v.kayttaja}
+                      </span>
+
+                      <button
+                        className="btn btn-sm btn-danger ms-3"
+                        onClick={() => peruutaVaraus(v.id)}
+                      >
+                        Peruuta
                       </button>
                     </li>
+
                   ))}
                 </ul>
               )}

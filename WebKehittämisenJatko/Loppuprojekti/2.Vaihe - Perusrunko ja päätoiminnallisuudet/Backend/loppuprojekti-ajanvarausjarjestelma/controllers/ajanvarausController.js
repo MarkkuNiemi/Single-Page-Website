@@ -52,20 +52,41 @@ const poistaAika = async (req, res) => {
   }
 };
 
-// PATCH: varaa aika (päivittää statuksen)
+// PATCH: varaa aika (päivittää statuksen ja asiakkaan nimen)
 const varaaAika = async (req, res) => {
   const { id } = req.params;
+  const { asiakas } = req.body;
+
   try {
     await pool.query(
-      'UPDATE ajat SET status = $1 WHERE id = $2',
-      ['varattu', id]
+      'UPDATE ajat SET status = $1, asiakas = $2 WHERE id = $3',
+      ['varattu', asiakas, id]
     );
     res.json({ viesti: 'Aika varattu onnistuneesti' });
   } catch (err) {
-    console.error(err);
+    console.error('Varausvirhe:', err); // lisää tarkka virheloki!
     res.status(500).json({ virhe: 'Ajan varaaminen epäonnistui' });
   }
 };
 
-module.exports = { haeAjat, lisaaAika, poistaAika, varaaAika };
+
+
+const haeAsiakkaanAjat = async (req, res) => {
+  const { asiakas } = req.query;
+
+  try {
+    const tulos = await pool.query(
+      'SELECT * FROM ajat WHERE asiakas = $1 ORDER BY paiva, aika',
+      [asiakas]
+    );
+    res.json(tulos.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ virhe: 'Omien varausten haku epäonnistui' });
+  }
+};
+
+
+
+module.exports = { haeAjat, lisaaAika, poistaAika, varaaAika, haeAsiakkaanAjat };
 
