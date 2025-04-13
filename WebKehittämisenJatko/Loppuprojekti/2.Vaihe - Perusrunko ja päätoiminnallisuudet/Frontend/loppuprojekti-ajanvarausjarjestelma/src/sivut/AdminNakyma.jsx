@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -9,12 +9,25 @@ function AdminNakyma() {
   const navigate = useNavigate();
   const [date, setDate] = useState(new Date());
   const [valittuHenkilo, setValittuHenkilo] = useState('Lääkäri Emilia');
+  const [ajat, setAjat] = useState([]);
   const [uusiAika, setUusiAika] = useState('');
 
-  const [kaikkiAjat, setKaikkiAjat] = useState([
-    { id: 1, ammattilainen: 'Lääkäri Emilia', aika: '10:00 - 11:00', status: 'vapaa' },
-    { id: 2, ammattilainen: 'Lääkäri Petteri', aika: '11:30 - 12:30', status: 'varattu' },
-  ]);
+  const paivaStr = date.toISOString().split('T')[0];
+
+  // Hae valitun ammattilaisen ajat valitulle päivälle
+  const haeAjat = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/ajat?paiva=${paivaStr}&kayttaja=${valittuHenkilo}`);
+      const data = await res.json();
+      setAjat(data);
+    } catch (err) {
+      console.error('Virhe haettaessa aikoja:', err);
+    }
+  };
+
+  useEffect(() => {
+    haeAjat();
+  }, [date, valittuHenkilo]);
 
   const handleDateChange = (newDate) => {
     setDate(newDate);
@@ -24,34 +37,62 @@ function AdminNakyma() {
     navigate('/');
   };
 
-  const poistaAika = (id) => {
-    setKaikkiAjat(kaikkiAjat.filter((a) => a.id !== id));
-  };
-
-  const lisaaAika = () => {
+  const lisaaAika = async () => {
     if (!uusiAika) return;
+
     const uusi = {
-      id: Date.now(),
-      ammattilainen: valittuHenkilo,
+      kayttaja: valittuHenkilo,
+      paiva: paivaStr,
       aika: uusiAika,
       status: 'vapaa',
     };
-    setKaikkiAjat([...kaikkiAjat, uusi]);
-    setUusiAika('');
+
+    try {
+      const res = await fetch('http://localhost:5000/api/ajat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(uusi),
+      });
+
+      if (res.ok) {
+        setUusiAika('');
+        await haeAjat();
+      } else {
+        alert('Ajan lisääminen epäonnistui');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Verkkovirhe lisättäessä aikaa');
+    }
+  };
+
+  const poistaAika = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/ajat/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        await haeAjat();
+      } else {
+        alert('Ajan poistaminen epäonnistui');
+      }
+    } catch (err) {
+      console.error('Virhe poistaessa aikaa:', err);
+      alert('Verkkovirhe poistaessa aikaa');
+    }
   };
 
   return (
     <div className="admin-nakyma">
       <header className="header">
-        <h1>Admin - Kaikki ammattilaisten varaukset</h1>
+        <h1>Vastaanottovirkailija - Niilo</h1>
       </header>
 
       <main className="main-content">
-        {/* Kalenteri vasemmalla */}
         <div className="kalenteri">
           <Calendar onChange={handleDateChange} value={date} />
 
-          {/* Takaisin kirjautumissivulle */}
           <div style={{ marginTop: '1.5rem' }}>
             <button className="btn btn-turkoosi" onClick={meneTakaisin}>
               Takaisin kirjautumissivulle
@@ -59,11 +100,9 @@ function AdminNakyma() {
           </div>
         </div>
 
-        {/* Lista ja hallinta oikealla */}
         <div className="ajat-lista">
-          <h2>Ajat päivälle {date.toLocaleDateString()}</h2>
+          <h2>{valittuHenkilo} – {date.toLocaleDateString()}</h2>
 
-          {/* Ammattihenkilön valinta */}
           <div className="mb-3">
             <label htmlFor="henkiloSelect"><strong>Valitse ammattilainen:</strong></label>
             <select
@@ -77,19 +116,21 @@ function AdminNakyma() {
             </select>
           </div>
 
-          {/* Lista */}
           <ul>
-            {kaikkiAjat
-              .filter((aika) => aika.ammatilainen === valittuHenkilo)
-              .map((aika) => (
+            {ajat.length === 0 ? (
+              <li>Ei aikoja tälle päivälle</li>
+            ) : (
+              ajat.map((aika) => (
                 <li key={aika.id} className={aika.status === 'vapaa' ? 'vapaa' : 'varattu'}>
-                  {aika.aika} ({aika.status}) – {aika.ammatilainen}
+                  {aika.aika} ({aika.status}
+                  {aika.status === 'varattu' && aika.asiakas ? ` – Asiakas: ${aika.asiakas}` : ''})
                   <button onClick={() => poistaAika(aika.id)}>Poista</button>
                 </li>
-              ))}
+              ))
+            )}
           </ul>
 
-          {/* Lisää uusi aika */}
+
           <div className="lisaa-aika">
             <input
               type="text"
