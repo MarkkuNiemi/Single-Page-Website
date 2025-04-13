@@ -35,6 +35,7 @@ function AsiakasNakyma() {
         (aika) => aika.status === 'varattu' && aika.asiakas === asiakasNimi
       );
       setOmatVaraukset(omat);
+      console.log('Omat varaukset raw:', data);
     } catch (err) {
       console.error('Virhe haettaessa omia varauksia:', err);
     }
@@ -95,6 +96,25 @@ function AsiakasNakyma() {
       alert('Verkkovirhe peruuttaessa aikaa');
     }
   };
+
+  const muotoilePaiva = (paivaStr) => {
+    if (!paivaStr) return 'Tuntematon päivä';
+
+    // Erotellaan vain päivämäärä, esim. '2025-04-14'
+    const vainPaiva = paivaStr.split('T')[0];
+    const [vuosi, kuukausi, paiva] = vainPaiva.split('-');
+
+    // Luodaan uusi päivämäärä ja lisätään 1 päivä
+    const korjattu = new Date(vuosi, kuukausi - 1, parseInt(paiva) + 2);
+
+    const pvm = korjattu.getDate().toString().padStart(2, '0');
+    const kk = (korjattu.getMonth() + 1).toString().padStart(2, '0');
+    const v = korjattu.getFullYear();
+
+    return `${pvm}.${kk}.${v}`;
+  };
+
+
 
 
 
@@ -157,9 +177,8 @@ function AsiakasNakyma() {
                   {omatVaraukset.map((v) => (
                     <li key={v.id} className="d-flex justify-content-between align-items-center">
                       <span>
-                        {new Date(v.paiva).toLocaleDateString()} klo {v.aika} – {v.kayttaja}
+                        {muotoilePaiva(v.paiva)} klo {v.aika} – {v.kayttaja}
                       </span>
-
                       <button
                         className="btn btn-sm btn-danger ms-3"
                         onClick={() => peruutaVaraus(v.id)}
@@ -167,9 +186,11 @@ function AsiakasNakyma() {
                         Peruuta
                       </button>
                     </li>
-
                   ))}
+
                 </ul>
+
+
               )}
             </div>
           </div>

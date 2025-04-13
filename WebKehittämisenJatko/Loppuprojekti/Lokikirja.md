@@ -10,5 +10,5 @@
 | 6.4.2025 |    3,5              | Vaihe 2  | Tehtävänantoon tutustuminen, Frontend sisällön tekemistä, sivujen ulkoasua yms. (React + Vite)    |
 | 7.4.2025 |    3              | Vaihe 2  |  Frontend sisällön tekemistä, sivujen ulkoasua yms. (React + Vite + Tailwind kokeilua ja lopulta sen korvaus Bootstrap)    |
 | 9.4.2025 |    3              | Vaihe 2  |  Frontend sisällön tekemistä, sivujen tekoa ja Backend aloitusta   |
-| 10.4.2025 |    3              | Vaihe 2  |  PostgreSQL tekemistä   |
-| 13.4.2025 |    5              | Vaihe 2  |  PostgreSQL tekemistä   |
+| 10.4.2025 |    3              | Vaihe 2  |  PostgreSQL tekemistä , asiakas + ammattilainen sivujen yhteispeli  |
+| 13.4.2025 |    7              | Vaihe 2  |  PostgreSQL tekemistä, asiakas + ammattilainen sivujen yhteispeli, admin sivun tekeminen, Kuormitustesti K6, E2E-testi, Azuren aloittaminen   |
