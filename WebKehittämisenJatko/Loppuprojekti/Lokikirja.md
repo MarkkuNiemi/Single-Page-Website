@@ -13,3 +13,4 @@
 | 10.4.2025 |    3              | Vaihe 2  |  PostgreSQL tekemistä , asiakas + ammattilainen sivujen yhteispeli  |
 | 13.4.2025 |    7              | Vaihe 2  |  PostgreSQL tekemistä, asiakas + ammattilainen sivujen yhteispeli, admin sivun tekeminen, Kuormitustesti K6, E2E-testi, Azuren aloittaminen   |
 | 14.4.2025 |    4              | Vaihe 2  |  Azuren kanssa kamppailua  |
+| 15.4.2025 |    1              | Vaihe 2  |  Frontend Azuressa  |
