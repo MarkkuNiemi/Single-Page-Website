@@ -11,6 +11,6 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist', // ⬅️ TÄMÄ LISÄTÄÄN!
+    outDir: 'dist', // Output directory for the build
   },
 });
