@@ -14,4 +14,4 @@
 | 13.4.2025 |    7              | Vaihe 2  |  PostgreSQL tekemistä, asiakas + ammattilainen sivujen yhteispeli, admin sivun tekeminen, Kuormitustesti K6, E2E-testi, Azuren aloittaminen   |
 | 14.4.2025 |    4              | Vaihe 2  |  Azuren kanssa kamppailua  |
 | 15.4.2025 |    1              | Vaihe 2  |  Frontend Azuressa  |
-| 18.4.2025 |    3              | Vaihe 2  |  Koodin läpikäyntiä, 1.Vaiheen määrittelyn läpikäynti ja peilaus nykytuotteeseen, Dokumentointia  |
+| 18.4.2025 |    5              | Vaihe 2  |  Koodin läpikäyntiä, 1.Vaiheen määrittelyn läpikäynti ja peilaus nykytuotteeseen, Dokumentointia, Tajuaminen, että SQL on paikallisesti ja tämän siirtämisen yritys Azure ympäristöön onnistumatta.  |

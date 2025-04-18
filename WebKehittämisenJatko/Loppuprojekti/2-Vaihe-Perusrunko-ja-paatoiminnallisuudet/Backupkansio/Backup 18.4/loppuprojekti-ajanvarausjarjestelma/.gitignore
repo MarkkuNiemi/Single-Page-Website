@@ -2,7 +2,7 @@
 node_modules/
 
 # Environment config
-
+.env
 
 # Logs
 logs
@@ -18,4 +18,8 @@ Thumbs.db
 # Optional VSCODE workspace config
 .vscode/
 
-
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
