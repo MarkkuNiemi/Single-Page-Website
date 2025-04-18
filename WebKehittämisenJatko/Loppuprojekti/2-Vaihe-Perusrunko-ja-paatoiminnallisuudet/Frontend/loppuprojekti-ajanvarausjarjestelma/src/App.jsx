@@ -1,7 +1,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+// Siirtymät eri sivuille
 import Kirjautuminen from './sivut/Kirjautuminen';
-import AsiakasNakyma from './sivut/AsiakasNakyma'; // lisää jos käytät
+import AsiakasNakyma from './sivut/AsiakasNakyma';
 import AmmattilainenNakyma from './sivut/AmmattilainenNakyma';
 import AdminNakyma from './sivut/AdminNakyma';
 // Lisää muut näkymät jos tarvitset

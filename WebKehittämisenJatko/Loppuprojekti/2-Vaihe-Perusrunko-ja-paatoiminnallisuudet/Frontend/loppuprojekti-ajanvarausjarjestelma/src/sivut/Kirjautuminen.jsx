@@ -16,7 +16,7 @@ function Kirjautuminen() {
       return;
     }
 
-    // Voit lisätä tähän myöhemmin oikean autentikoinnin
+    // Tähän voi lisätä myöhemmin autentikoinnin
 
     // Ohjaa eri näkymään roolin perusteella
     if (valittuRooli === 'asiakas') {
